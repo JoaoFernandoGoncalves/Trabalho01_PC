@@ -685,11 +685,11 @@ void arquivaMatrizEscores() {
 
     printf("\n\nDigite o nome do arquivo que deseja criar ou modificar para escrever a matriz escore: ");
     scanf("%s", &nomeArq);
-    
+
     FILE *arquivo = fopen(nomeArq, "w");
     
     fprintf(arquivo, "Matriz de Escores:\n\n");
-
+ 
     // Cabeçalho da coluna com os índices
     fprintf(arquivo, "    ");
     for (i = 0; i <= tamSeqMaior; i++) {
