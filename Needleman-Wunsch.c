@@ -188,25 +188,6 @@ void mostraMatrizPesos(void)
   }
 }
 
-
-/* leitura da porcentagem maxima (grau) de mutacao aleatoria. Essa porcentagem eh
-   usada na geracao aleatoria da seqMenor. A seqMenor eh obtida a partir da seqMaior, para se parecer com ela, se diferenciando
-   por um certo grau de alteracoes em suas bases, fornecida pelo usuario. Esse
-   metodo evita a gera��o aleatoria de sequencias totalmente diferentes. A
-   quantidade de trocas realizadas eh no maximo a porcentagem aqui informada. */
-
-int leGrauMutacao(void)
-{ int prob;
-
-  printf("\nLeitura da Porcentagem Maxima de Mutacao Aleatoria:\n");
-  do
-  { printf("\nDigite 0 <= valor <= 100 = ");
-    scanf("%d", &prob);
-  } while ((prob<0)||(prob>100));
-
-  return prob;
-}
-
 /* leitura manual das sequencias de entrada seqMaior e seqMenor */
 void leSequencias(void)
 { int i, erro;
@@ -280,6 +261,99 @@ void leSequencias(void)
   }while (erro==1);
 }
 
+void leArquivoSeq(){
+    FILE *arqPonteiro;
+    arqPonteiro = fopen("sequencias.txt", "r");
+
+    printf("\nVerifique se as sequencias estao nas linhas corretas!");
+    printf("\nIniciando leitura de arquivo!\n");
+
+    char seqMaiorAux[maxSeq], seqMenorAux[maxSeq], ch;
+    int i = 0;
+
+    //Lê sequencia maior e menor para strings auxiliares
+    do{ 
+        ch = fgetc(arqPonteiro);
+
+        if(ch == 'A' || ch == 'T' || ch == 'G' || ch == 'C')
+            strncat(seqMaiorAux, &ch, 1);
+
+        if(ch == '\n'){
+            do{
+                ch = fgetc(arqPonteiro);
+
+                if(ch == 'A' || ch == 'T' || ch == 'G' || ch == 'C')
+                  strncat(seqMenorAux, &ch, 1);
+
+            }while(ch != EOF);
+        }
+
+    }while(ch != EOF);
+
+    tamSeqMaior = strlen(seqMaiorAux);
+    tamSeqMenor = strlen(seqMenorAux);
+
+    int erro = 0;
+
+    do
+    {
+      switch (seqMaiorAux[i])
+      {
+        case 'A': seqMaior[i]=A;
+                  break;
+        case 'T': seqMaior[i]=T;
+                  break;
+        case 'G': seqMaior[i]=G;
+                  break;
+        case 'C': seqMaior[i]=C;
+                  break;
+        default: erro=1;  /* nao eh permitido qquer outro caractere */
+      }
+      i++;
+    } while ((erro==0)&&(i<tamSeqMaior));
+
+    erro = 0;
+    i = 0;
+    
+    do
+    {
+      switch (seqMenorAux[i])
+      {
+        case 'A': seqMenor[i]=A;
+                  break;
+        case 'T': seqMenor[i]=T;
+                  break;
+        case 'G': seqMenor[i]=G;
+                  break;
+        case 'C': seqMenor[i]=C;
+                  break;
+        default: erro=1;  /* nao eh permitido qquer outro caractere */
+      }
+      i++;
+    } while ((erro==0)&&(i<tamSeqMenor));
+
+    fclose(arqPonteiro);
+
+    printf("Sequencias lidas do arquivo!\n");
+}
+
+/* leitura da porcentagem maxima (grau) de mutacao aleatoria. Essa porcentagem eh
+   usada na geracao aleatoria da seqMenor. A seqMenor eh obtida a partir da seqMaior, para se parecer com ela, se diferenciando
+   por um certo grau de alteracoes em suas bases, fornecida pelo usuario. Esse
+   metodo evita a gera��o aleatoria de sequencias totalmente diferentes. A
+   quantidade de trocas realizadas eh no maximo a porcentagem aqui informada. */
+
+int leGrauMutacao(void)
+{ int prob;
+
+  printf("\nLeitura da Porcentagem Maxima de Mutacao Aleatoria:\n");
+  do
+  { printf("\nDigite 0 <= valor <= 100 = ");
+    scanf("%d", &prob);
+  } while ((prob<0)||(prob>100));
+
+  return prob;
+}
 
 /* geracao das sequencias aleatorias, conforme tamanho. Gera-se numeros aleatorios
    de 0 a 3 representando as bases 'A', 'T', 'G' e 'C'. Gera-se primeiramente a
@@ -659,12 +733,15 @@ void trataOpcao(int op)
             break;
     case 4: printf("\nPenalidade = %d",penalGap);
             break;
-    case 5: printf("\nDeseja Definicao: <1>MANUAL ou <2>ALEATORIA? = ");
+    case 5: printf("\nDeseja Definicao: <1>MANUAL, <2>ARQUIVO ou <3>ALEATORIA? = ");
             scanf("%d",&resp);
             scanf("%c",&enter); /* remove o enter */
             if (resp==1)
             {
               leSequencias();
+            }
+            else if(resp==2){
+                leArquivoSeq();
             }
             else
             { leTamMaior();
