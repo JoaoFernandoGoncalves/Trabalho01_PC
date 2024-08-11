@@ -686,7 +686,7 @@ void escreveMatrizEscores() {
 
     FILE *arquivo = fopen(nomeArq, "w");
     if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo para escrita.\n");
+        printf("Erro ao abrir o arquivo %s para escrita.\n", nomeArq);
         return;
     }
 
@@ -725,7 +725,7 @@ void escreveMatrizEscores() {
     }
 
     fclose(arquivo);
-    printf("Matriz de escores escrita com sucesso no arquivo\n");
+    printf("\nMatriz de escores escrita com sucesso no arquivo %s\n", nomeArquivo);
 }
 
 
