@@ -522,8 +522,47 @@ void mostraSequencias(void)
    demais linhas e colunas sao associadas as bases da seqMenor e da
    SeqMaior, respectivamente. */
 
+int score_numThreads;
+
+typedef struct {
+    int thread_id;
+    int num_threads;
+} thread_pack;
+
+void *calculaEscores(void *arg)
+{
+    thread_pack *pack = (thread_pack *)arg;
+    int thread_id = pack->thread_id;
+    int num_threads = pack->num_threads;
+
+    for (int lin = 1 + thread_id; lin <= tamSeqMenor; lin += num_threads) {
+        for (int col = 1; col <= tamSeqMaior; col++) {
+            int peso = matrizPesos[(seqMenor[lin-1])][(seqMaior[col-1])];
+            int escoreDiag = matrizEscores[lin-1][col-1] + peso;
+            int escoreLin = matrizEscores[lin][col-1] - penalGap;
+            int escoreCol = matrizEscores[lin-1][col] - penalGap;
+
+            if ((escoreDiag > escoreLin) && (escoreDiag > escoreCol))
+                matrizEscores[lin][col] = escoreDiag;
+            else if (escoreLin > escoreCol)
+                matrizEscores[lin][col] = escoreLin;
+            else
+                matrizEscores[lin][col] = escoreCol;
+        }
+    }
+
+    pthread_exit(NULL);
+}
+
 void geraMatrizEscores(void)
 { int lin, col, peso;
+
+  printf("\nDigite a quantidade de threads que deseja utilziar na geração da matriz score: ");
+  scanf("%d", &score_numThreads);
+
+  pthread_t threads[score_numThreads];
+  thread_pack thread_pack[score_numThreads];
+  int iret;
 
   printf("\nGeracao da Matriz de escores:\n");
   /*  A matriz sera gerada considerando que ela representa o cruzamento
@@ -546,22 +585,20 @@ void geraMatrizEscores(void)
                              \ f(lin-1,col)-penalGap
   */
 
-  for (lin=1; lin<=tamSeqMenor; lin++)
-  {
-    for (col=1; col<=tamSeqMaior; col++)
-    {
-      peso=matrizPesos[(seqMenor[lin-1])][(seqMaior[col-1])];
-      escoreDiag = matrizEscores[lin-1][col-1]+peso;
-      escoreLin = matrizEscores[lin][col-1]-penalGap;
-      escoreCol = matrizEscores[lin-1][col]-penalGap;
+  for (int i = 0; i < score_numThreads; i++) {
+        thread_pack[i].thread_id = i;
+        thread_pack[i].num_threads = score_numThreads;
+        iret = pthread_create(&threads[i], NULL, calculaEscores, (void *)&thread_pack[i]);
 
-      if ((escoreDiag>escoreLin)&&(escoreDiag>escoreCol)) // trocado >= por >
-        matrizEscores[lin][col]=escoreDiag;
-      else if (escoreLin>escoreCol)
-              matrizEscores[lin][col]=escoreLin;
-           else matrizEscores[lin][col]=escoreCol;
-    }
+        if (iret) {
+            printf("ERRO: Código de retorno de pthread_create() é %d\n", iret);
+            exit(-1);
+        }
   }
+
+  for (int i = 0; i < score_numThreads; i++) {
+        pthread_join(threads[i], NULL);
+  }  
 
   /* localiza o primeiro e o ultimo maior escores e suas posicoes. */
 
