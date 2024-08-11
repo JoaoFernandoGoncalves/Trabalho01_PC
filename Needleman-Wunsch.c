@@ -48,6 +48,7 @@ BREVE DESCRICAO:
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #define A 0 // representa uma base Adenina
 #define T 1 // representa uma base Timina
@@ -362,19 +363,85 @@ int leGrauMutacao(void)
    de mutacao informado. A ideia eh gerar sequencias parecidas, mas com certo grau
    de diferenca. */
 
+
+int gr_seq_numThreads; /*Quantidade de threads para geração aleatória das sequências maior e menor, e ainda da mutação*/
+
+/*Geração aleatória da sequência maior*/
+void *geraSequenciaMaior(void *arg)
+{
+    int id = *(int *)arg;
+    int inicio = (id * tamSeqMaior) / gr_seq_numThreads;
+    int fim = ((id + 1) * tamSeqMaior) / gr_seq_numThreads;
+
+    for (int i = inicio; i < fim; i++) {
+        char base = rand() % 4;
+        seqMaior[i] = base;
+    }
+
+    pthread_exit(NULL);
+}
+
+/*Geração da sequência menor.  Copia trecho da sequencia maior,
+  a partir de um indice aleatorio que nao ultrapasse os limites do
+  vetor maior */
+void *geraSequenciaMenor(void *arg)
+{
+    int id = *(int *)arg;
+    int inicio = (id * tamSeqMenor) / gr_seq_numThreads;
+    int fim = ((id + 1) * tamSeqMenor) / gr_seq_numThreads;
+
+    for (int i = inicio; i < fim; i++) {
+        seqMenor[i] = seqMaior[indRef + i];
+    }
+
+    pthread_exit(NULL);
+}
+
+/*Paralelização da geração aleatória da sequência menor*/
+void *aplicaMutacoes(void *arg)
+{
+    int id = *(int *)arg;
+    int inicio = (id * tamSeqMenor) / gr_seq_numThreads;
+    int fim = ((id + 1) * tamSeqMenor) / gr_seq_numThreads;
+
+    for (int i = inicio; i < fim; i++) {
+        int probAux = rand() % 100 + 1;
+        if (probAux <= grauMuta && nTrocas < ((grauMuta * tamSeqMenor) / 100)) {
+            seqMenor[i] = (seqMenor[i] + (rand() % 3) + 1) % 4;
+            nTrocas++;
+        }
+    }
+
+    pthread_exit(NULL);
+}
+
 void geraSequencias(void)
-{   int i, dif, probAux;
-    char base;
+{   int dif;
+
+    printf("\nDigitite a quantidade de threads que deseja utilizar na geração aleatoria de sequencias: ");
+    scanf("%d", &gr_seq_numThreads);
+
+    pthread_t threads[gr_seq_numThreads];
+    int id_thread[gr_seq_numThreads];
+    int iret;
 
     printf("\nGeracao Aleatoria das Sequencias:\n");
 
-    /* gerando a sequencia maior */
-    for (i=0; i<tamSeqMaior; i++)
-      {
-        base=rand()%4; /* produz valores de 0 a 3 */
-        seqMaior[i]= base;
-      }
+    /* gerando a sequencia maior em paralelo */
+    for (int i = 0; i < gr_seq_numThreads; i++) {
+        id_thread[i] = i;
+        iret = pthread_create(&threads[i], NULL, geraSequenciaMaior, (void *)&id_thread[i]);
 
+        if (iret) {
+            printf("ERRO: código de retorno de pthread_create() é %d\n", iret);
+            exit(-1);
+        }
+    }
+
+    for (int i = 0; i < gr_seq_numThreads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
     dif=tamSeqMaior-tamSeqMenor; /* diferenca entre os tamanhos das sequencias */
 
     indRef=0;
@@ -383,11 +450,20 @@ void geraSequencias(void)
                          para a partir dele extrair a primeira versao da sequencia
                          menor */
 
-    /* gerando a sequencia menor a partir da maior. Copia trecho da sequencia
-       maior, a partir de um indice aleatorio que nao ultrapasse os limites do
-       vetor maior */
-    for (i=0; i<tamSeqMenor; i++)
-        seqMenor[i]=seqMaior[indRef+i];
+    /* gerando a sequencia menor a partir da maior em paralelo */
+    for (int i = 0; i < gr_seq_numThreads; i++) {
+        id_thread[i] = i;
+        iret = pthread_create(&threads[i], NULL, geraSequenciaMenor, (void *)&id_thread[i]);
+
+        if (iret) {
+            printf("ERRO: código de retorno de pthread_create() é %d\n", iret);
+            exit(-1);
+        }
+    }
+
+    for (int i = 0; i < gr_seq_numThreads; i++) {
+        pthread_join(threads[i], NULL);
+    }
 
     /* causa mutacoes aleatorias na sequencia menor para gerar "gaps",
        sobre cada base, de acordo com o grau (porcentagem) informado.
@@ -396,18 +472,16 @@ void geraSequencias(void)
        ateh 100 e se ela estiver dentro do grau informado, a mutacao
        ocorre na base, caso contrario, mantem a base copiada. */
 
-    i=0;
     nTrocas=0;
-    while ((i<tamSeqMenor)&&(nTrocas<((grauMuta*tamSeqMenor)/100)))
-    {
-      probAux=rand()%100+1;
 
-      if (probAux<=grauMuta)
-      {
-        seqMenor[i]=(seqMenor[i]+(rand()%3)+1)%4;
-        nTrocas++;
-      }
-      i++;
+    for (int i = 0; i < gr_seq_numThreads; i++) {
+        id_thread[i] = i;
+        iret = pthread_create(&threads[i], NULL, aplicaMutacoes, (void *)&id_thread[i]);
+
+        if (iret) {
+            printf("ERRO: código de retorno de pthread_create() é %d\n", iret);
+            exit(-1);
+        }
     }
 
     printf("\nSequencias Geradas: Dif = %d, IndRef = %d, NTrocas = %d\n ",dif, indRef, nTrocas);
