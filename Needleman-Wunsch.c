@@ -681,7 +681,7 @@ void escreveMatrizEscores() {
 
     char nomeArq[100];
 
-    printf("Digite o nome do arquivo que deseja criar ou modificar para escrever a matriz escore: ");
+    printf("\n\nDigite o nome do arquivo que deseja criar ou modificar para escrever a matriz escore: ");
     scanf("%s", &nomeArq);
 
     FILE *arquivo = fopen(nomeArq, "w");
@@ -725,7 +725,7 @@ void escreveMatrizEscores() {
     }
 
     fclose(arquivo);
-    printf("\nMatriz de escores escrita com sucesso no arquivo %s\n", nomeArquivo);
+    printf("\nMatriz de escores escrita com sucesso no arquivo %s\n", nomeArq);
 }
 
 
