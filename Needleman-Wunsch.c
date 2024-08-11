@@ -677,6 +677,57 @@ void mostraMatrizEscores()
   }
 }
 
+void escreveMatrizEscores() {
+
+    char nomeArq[100];
+
+    printf("Digite o nome do arquivo que deseja criar ou modificar para escrever a matriz escore: ");
+    scanf("%s", &nomeArq);
+
+    FILE *arquivo = fopen(nomeArq, "w");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo para escrita.\n");
+        return;
+    }
+
+    int i, lin, col;
+
+    fprintf(arquivo, "Matriz de Escores:\n\n");
+
+    // Cabeçalho da coluna com os índices
+    fprintf(arquivo, "    ");
+    for (i = 0; i <= tamSeqMaior; i++) {
+        fprintf(arquivo, "%4d", i);
+    }
+    fprintf(arquivo, "\n");
+
+    // Linha das bases da seqMaior
+    fprintf(arquivo, "    -");
+    for (i = 0; i < tamSeqMaior; i++) {
+        fprintf(arquivo, "%4c", mapaBases[(seqMaior[i])]);
+    }
+    fprintf(arquivo, "\n");
+
+    // Primeira linha da matriz (0, e seqMaior)
+    fprintf(arquivo, "  0 -");
+    for (col = 0; col <= tamSeqMaior; col++) {
+        fprintf(arquivo, "%4d", matrizEscores[0][col]);
+    }
+    fprintf(arquivo, "\n");
+
+    // Restante da matriz (seqMenor e valores)
+    for (lin = 1; lin <= tamSeqMenor; lin++) {
+        fprintf(arquivo, "%4d%4c", lin, mapaBases[(seqMenor[lin - 1])]);
+        for (col = 0; col <= tamSeqMaior; col++) {
+            fprintf(arquivo, "%4d", matrizEscores[lin][col]);
+        }
+        fprintf(arquivo, "\n");
+    }
+
+    fclose(arquivo);
+    printf("Matriz de escores escrita com sucesso no arquivo\n");
+}
+
 
 /* mostra os alinhamentos */
 void mostraAlinhamentoGlobal(void)
@@ -875,6 +926,7 @@ void trataOpcao(int op)
     case 6: mostraSequencias();
             break;
     case 7: geraMatrizEscores();
+            escreveMatrizEscores();
             break;
     case 8: mostraMatrizEscores();
             break;
