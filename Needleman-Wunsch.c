@@ -523,6 +523,7 @@ void mostraSequencias(void)
    SeqMaior, respectivamente. */
 
 int score_numThreads;
+pthread_mutex_t mutex;
 
 typedef struct {
     int thread_id;
@@ -541,13 +542,19 @@ void *calculaEscores(void *arg)
             int escoreDiag = matrizEscores[lin-1][col-1] + peso;
             int escoreLin = matrizEscores[lin][col-1] - penalGap;
             int escoreCol = matrizEscores[lin-1][col] - penalGap;
+            
+            int maxEscore;
 
             if ((escoreDiag > escoreLin) && (escoreDiag > escoreCol))
-                matrizEscores[lin][col] = escoreDiag;
+                maxEscore = escoreDiag;
             else if (escoreLin > escoreCol)
-                matrizEscores[lin][col] = escoreLin;
+                maxEscore = escoreLin;
             else
-                matrizEscores[lin][col] = escoreCol;
+                maxEscore= escoreCol;
+
+          pthread_mutex_lock(&mutex);
+          matrizEscores[lin][col] = maxEscore;
+          pthread_mutex_unlock(&mutex);
         }
     }
 
@@ -585,6 +592,8 @@ void geraMatrizEscores(void)
                              \ f(lin-1,col)-penalGap
   */
 
+  pthread_mutex_init(&mutex, NULL);
+
   for (int i = 0; i < score_numThreads; i++) {
         thread_pack[i].thread_id = i;
         thread_pack[i].num_threads = score_numThreads;
@@ -599,6 +608,8 @@ void geraMatrizEscores(void)
   for (int i = 0; i < score_numThreads; i++) {
         pthread_join(threads[i], NULL);
   }  
+
+  pthread_mutex_destroy(&mutex);
 
   /* localiza o primeiro e o ultimo maior escores e suas posicoes. */
 
