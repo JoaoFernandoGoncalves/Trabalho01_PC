@@ -724,6 +724,23 @@ void arquivaMatrizEscores() {
     fclose(arquivo);
 }
 
+/* mostra os alinhamentos */
+void mostraAlinhamentoGlobal(void)
+{   int i;
+
+  printf("\nAlinhamento Obtido - Tamanho = %d:\n", tamAlinha);
+
+  printf("%c",mapaBases[alinhaGMaior[0]]);
+  for (i=1; i<tamAlinha; i++)
+    printf("%c",mapaBases[alinhaGMaior[i]]);
+  printf("\n");
+
+  printf("%c",mapaBases[alinhaGMenor[0]]);
+  for (i=1; i<tamAlinha; i++)
+    printf("%c",mapaBases[alinhaGMenor[i]]);
+  printf("\n");
+}
+
 /* gera o alinhamento global por meio do percurso de retorno na Matriz de escores,
    em duas formas possiveis, conforme o parametro tipo: 1) a partir da celula do
    primeiro maior escore [linPMaior,colPMaior] ou 2) a partir da celula de ultimo
