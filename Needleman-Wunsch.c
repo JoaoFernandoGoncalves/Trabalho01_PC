@@ -524,7 +524,7 @@ void mostraSequencias(void)
    SeqMaior, respectivamente. */
 
 int score_numThreads;
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct {
     int thread_id;
