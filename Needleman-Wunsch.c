@@ -262,6 +262,7 @@ void leSequencias(void)
   }while (erro==1);
 }
 
+//Leitura de sequências a partir de arquivo
 void leArquivoSeq(){
     FILE *arqPonteiro;
     arqPonteiro = fopen("sequencias.txt", "r");
@@ -427,7 +428,7 @@ void geraSequencias(void)
 
     printf("\nGeracao Aleatoria das Sequencias:\n");
 
-    /* gerando a sequencia maior em paralelo */
+    /* gerando a sequencia maior usando  n threads */
     for (int i = 0; i < gr_seq_numThreads; i++) {
         id_thread[i] = i;
         iret = pthread_create(&threads[i], NULL, geraSequenciaMaior, (void *)&id_thread[i]);
@@ -562,9 +563,9 @@ void *calculaEscores(void *arg)
 }
 
 void geraMatrizEscores(void)
-{ int lin, col, peso;
+{ int lin, col;
 
-  printf("\nDigite a quantidade de threads que deseja utilziar na geração da matriz score: ");
+  printf("\nDigite a quantidade de threads que deseja utiliziar na geracao da matriz score: ");
   scanf("%d", &score_numThreads);
 
   pthread_t threads[score_numThreads];
@@ -592,23 +593,23 @@ void geraMatrizEscores(void)
                              \ f(lin-1,col)-penalGap
   */
 
-  pthread_mutex_init(&mutex, NULL);
+  /* Inicialização do mutex */
+    if (pthread_mutex_init(&mutex, NULL) != 0) {
+        printf("\nErro na inicialização do mutex.\n");
+        exit(EXIT_FAILURE);
+    }
 
   for (int i = 0; i < score_numThreads; i++) {
         thread_pack[i].thread_id = i;
         thread_pack[i].num_threads = score_numThreads;
         iret = pthread_create(&threads[i], NULL, calculaEscores, (void *)&thread_pack[i]);
-
-        if (iret) {
-            printf("ERRO: Código de retorno de pthread_create() é %d\n", iret);
-            exit(-1);
-        }
   }
 
   for (int i = 0; i < score_numThreads; i++) {
         pthread_join(threads[i], NULL);
   }  
 
+  /* Destruição do mutex */
   pthread_mutex_destroy(&mutex);
 
   /* localiza o primeiro e o ultimo maior escores e suas posicoes. */
