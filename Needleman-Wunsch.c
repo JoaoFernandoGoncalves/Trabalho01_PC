@@ -419,7 +419,7 @@ void *aplicaMutacoes(void *arg)
 void geraSequencias(void)
 {   int dif;
 
-    printf("\nDigitite a quantidade de threads que deseja utilizar na geração aleatoria de sequencias: ");
+    printf("\nDigitite a quantidade de threads que deseja utilizar na geracao aleatoria de sequencias: ");
     scanf("%d", &gr_seq_numThreads);
 
     pthread_t threads[gr_seq_numThreads];
@@ -678,7 +678,7 @@ void mostraMatrizEscores()
   }
 }
 
-void arquivaMatrizEscores() {
+void arquivaMatrizEscores(){
 
     char nomeArq[100];
     int i, lin, col;
@@ -689,38 +689,31 @@ void arquivaMatrizEscores() {
 
     FILE *arquivo = fopen(nomeArq, "w");
     
-    fprintf(arquivo, "Matriz de Escores:\n\n");
- 
-    // Cabeçalho da coluna com os índices
-    fprintf(arquivo, "    ");
-    for (i = 0; i <= tamSeqMaior; i++) {
-        fprintf(arquivo, "%*d", larguraCampo, i);
-    }
+     fprintf(arquivo, "Matriz de Escores:\n\n");
+
+    fprintf(arquivo, "%4c%4c", ' ', ' ');
+    for (i = 0; i <= tamSeqMaior; i++)
+        fprintf(arquivo, "%4d", i);
     fprintf(arquivo, "\n");
 
-    // Linha das bases da seqMaior
-    fprintf(arquivo, "    -");
-    for (i = 0; i < tamSeqMaior; i++) {
-        fprintf(arquivo, "%*c", larguraCampo, mapaBases[(seqMaior[i])]);
-    }
+    fprintf(arquivo, "%4c%4c%4c", ' ', ' ', '-');
+    for (i = 0; i < tamSeqMaior; i++)
+        fprintf(arquivo, "%4c", mapaBases[seqMaior[i]]);
     fprintf(arquivo, "\n");
 
-    // Linha inicial (0, e seqMaior)
-    fprintf(arquivo, "%*d -", larguraCampo, 0);
-    for (col = 0; col <= tamSeqMaior; col++) {
-        fprintf(arquivo, "%*d", larguraCampo, matrizEscores[0][col]);
-    }
+    fprintf(arquivo, "%4d%4c", 0, '-');
+    for (col = 0; col <= tamSeqMaior; col++)
+        fprintf(arquivo, "%4d", matrizEscores[0][col]);
     fprintf(arquivo, "\n");
 
-    // Restante da matriz (seqMenor e valores)
     for (lin = 1; lin <= tamSeqMenor; lin++) {
-        fprintf(arquivo, "%*d%*c", larguraCampo, lin, larguraCampo, mapaBases[(seqMenor[lin - 1])]);
+        fprintf(arquivo, "%4d%4c", lin, mapaBases[seqMenor[lin - 1]]);
         for (col = 0; col <= tamSeqMaior; col++) {
-            fprintf(arquivo, "%*d", larguraCampo, matrizEscores[lin][col]);
+            fprintf(arquivo, "%4d", matrizEscores[lin][col]);
         }
         fprintf(arquivo, "\n");
     }
-
+ 
     fclose(arquivo);
 }
 
